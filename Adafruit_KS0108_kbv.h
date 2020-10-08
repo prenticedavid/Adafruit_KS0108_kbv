@@ -39,10 +39,10 @@ class Adafruit_KS0108_kbv : public Adafruit_GFX {
         
     protected:
         void     ks0108_command(uint8_t cmd);
+        uint8_t _left, _rt, _top, _bot;
 
     private:
         uint8_t buffer[1024];
-        uint8_t _left, _rt, _top, _bot;
 };
 
 

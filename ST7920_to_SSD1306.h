@@ -4,11 +4,13 @@
  * Created: 06/10/2020 14:25:06
  *  Author: David Prentice
  *
+ * Original ST7920 library : https://github.com/cbm80amiga/ST7920_SPI
+ *
  *  1. replace "ST7920_SPI.h" with "ST7920_to_SSD1306.h"
  *  2. replace ST7920_SPI constructor with ST7920_to_SSD1306(lcd_cs)
  *  3. 
  *  4. ST7920_to_SSD1306 uses FreeFonts or NULL (System 5x7)
- *  5. I have made no attempt to support cbm2amiga's font or text methods.
+ *  5. I have made no attempt to support cbm80amiga's font or text methods.
  *
  */
 

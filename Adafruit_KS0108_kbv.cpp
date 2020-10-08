@@ -42,15 +42,17 @@ void Adafruit_KS0108_kbv::drawPixel(int16_t x, int16_t y, uint16_t color)
                 y = HEIGHT - y - 1;
                 break;
         }
-        uint8_t *ads = &buffer[x + (y / 8) * WIDTH];
+        uint8_t *ads = &buffer[x + (y >> 3) * WIDTH];
         uint8_t mask = (1 << (y & 7));
-        uint8_t old = *ads;
+        uint8_t d = *ads;
+        uint8_t old = d;
         switch (color) {
-            case KS0108_WHITE:   *ads |= mask; break;
-            case KS0108_BLACK:   *ads &= ~mask; break;
-            case KS0108_INVERSE: *ads ^= mask; break;
+            case KS0108_WHITE:   d |= mask; break;
+            case KS0108_BLACK:   d &= ~mask; break;
+            case KS0108_INVERSE: d ^= mask; break;
         }
-        if (*ads != old) { //is not too expensive
+        if (d != old) { //is not too expensive
+            *ads = d;
             if (x < _left) _left = x;
             if (x > _rt) _rt = x;
             if (y < _top) _top = y;

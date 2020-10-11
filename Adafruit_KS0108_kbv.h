@@ -25,9 +25,7 @@ class Adafruit_KS0108_kbv : public Adafruit_GFX {
         virtual void     fillScreen(uint16_t color)                                     {
             fillRect(0, 0, _width, _height, color);
         }
-        void clearDisplay(void) {
-            fillRect(0, 0, _width, _height, KS0108_BLACK);
-        }
+        void clearDisplay(uint8_t color = KS0108_BLACK);
         //virtual void     setRotation(uint8_t r);
         virtual void     invertDisplay(bool i);
         bool     getPixel(int16_t x, int16_t y);

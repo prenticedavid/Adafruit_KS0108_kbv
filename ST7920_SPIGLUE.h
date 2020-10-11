@@ -75,20 +75,7 @@ class ST7920_SPIGLUE : public Adafruit_KS0108_kbv
         void printTxt(uint8_t pos, uint16_t *signs);
 #endif
         void cls() {
-            //Adafruit_KS0108_kbv::clearDisplay();
-            uint8_t c = 0;
-            for (uint8_t y = 0; y < 64; y += 8) {
-                uint8_t *p = getBuffer() + (y / 8) * 128;
-                for (uint8_t x = 0; x < 128; x++, p++) {
-                    if (*p != c) {
-                        *p = c;
-                        if (x < Adafruit_KS0108_kbv::_left) Adafruit_KS0108_kbv::_left = x;
-                        if (x > Adafruit_KS0108_kbv::_rt) Adafruit_KS0108_kbv::_rt = x;
-                        if (y < Adafruit_KS0108_kbv::_top) Adafruit_KS0108_kbv::_top = y;
-                        if (y > Adafruit_KS0108_kbv::_bot) Adafruit_KS0108_kbv::_bot = y;
-                    }
-                }
-            }
+            Adafruit_KS0108_kbv::clearDisplay();
         }
         void drawLineH(uint8_t x0, uint8_t x1, uint8_t y, uint8_t col) {
             Adafruit_KS0108_kbv::fillRect(x0, y, x1 - x0 + 1, 1, col);

@@ -24,8 +24,12 @@ void Adafruit_KS0108_kbv::begin(void)
     _top = 0, _bot = 63;
 }
 
+#define USE_FILLRECT 1
 void Adafruit_KS0108_kbv::drawPixel(int16_t x, int16_t y, uint16_t color)
 {
+#if USE_FILLRECT == 2
+    fillRect(x, y, 1, 1, color);
+#else
     if ((x >= 0) && (x < width()) && (y >= 0) && (y < height())) {
         // Pixel is in-bounds. Rotate coordinates if needed.
         switch (getRotation()) {
@@ -59,6 +63,7 @@ void Adafruit_KS0108_kbv::drawPixel(int16_t x, int16_t y, uint16_t color)
             if (y > _bot) _bot = y;
         }
     }
+#endif
 }
 
 bool Adafruit_KS0108_kbv::getPixel(int16_t x, int16_t y) {
@@ -83,11 +88,84 @@ bool Adafruit_KS0108_kbv::getPixel(int16_t x, int16_t y) {
     return false; // Pixel out of bounds
 }
 
-void Adafruit_KS0108_kbv::fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color)
+void Adafruit_KS0108_kbv::fillRect(int16_t x0, int16_t y0, int16_t w, int16_t h, uint16_t color)
 {
-    for (int row = y; row < y + h; row++) {
-        for (int col = x; col < x + w; col++) {
+#if USE_FILLRECT > 0
+    // constrain the logical arguments
+    if (x0 >= width() || y0 >= height()) return;
+    if (x0 < 0) w += x0, x0 = 0; //adding -ve vales
+    if (y0 < 0) h += y0, y0 = 0;
+    if (x0 + w > width()) w = width() - x0;
+    if (y0 + h > height()) h = height() - y0;
+    //transform to the physical memory layout
+    switch (getRotation()) {
+        case 1:
+            ks0108_swap(x0, y0);
+            ks0108_swap(w, h);
+            x0 = WIDTH - x0 - w;
+            break;
+        case 2:
+            x0 = WIDTH  - x0 - w;
+            y0 = HEIGHT - y0 - h;
+            break;
+        case 3:
+            ks0108_swap(x0, y0);
+            ks0108_swap(w, h);
+            y0 = HEIGHT - y0 - h;
+            break;
+    }
+    //update the physical buffer memory
+    uint8_t lshift = y0 & 7;
+    for (uint8_t y = y0 & ~7; y < 64 && h > 0; y += 8) {
+        uint8_t rshift = (h < 8) ? 8 - h : 0;
+        uint8_t mask = 0xFF >> rshift;
+        uint8_t *p = getBuffer() + ((y / 8) * 128) + x0;
+        if (lshift) {
+            mask <<= lshift;
+            h -= 8 - lshift;
+            lshift = 0;  //one-off
+        }
+        else h -= 8;
+        for (int x = x0; x < x0 + w; x++, p++) {
+            uint8_t oldb = *p;
+            uint8_t newb = (oldb & ~mask);
+            if (color == KS0108_WHITE) newb |= mask;
+            if (color == KS0108_INVERSE) newb |= oldb ^ mask;
+            if (newb != oldb) {
+                *p = newb;
+
+                if (x < _left) _left = x;
+                if (x > _rt) _rt = x;
+                if (y < _top) _top = y;
+                if (y > _bot) _bot = y;
+
+            }
+        }
+    }
+#else
+    for (int row = y0; row < y0 + h; row++) {
+        for (int col = x0; col < x0 + w; col++) {
             drawPixel(col, row, color);
+        }
+    }
+#endif
+}
+
+void Adafruit_KS0108_kbv::clearDisplay(uint8_t color)
+{
+    uint8_t c = (color == KS0108_WHITE) ? 0xFF : 0x00;
+    for (uint8_t y = 0; y < 64; y += 8) {
+        uint8_t *p = getBuffer() + (y / 8) * 128;
+        for (uint8_t x = 0; x < 128; x++, p++) {
+            uint8_t oldb = *p;
+            if (color == KS0108_INVERSE) c = oldb ^ 0xFF;
+            if (oldb != c) {
+                *p = c;
+                if (x < _left) _left = x;
+                if (x > _rt) _rt = x;
+                if (y < _top) _top = y;
+                if (y > _bot) _bot = y;
+            }
         }
     }
 }

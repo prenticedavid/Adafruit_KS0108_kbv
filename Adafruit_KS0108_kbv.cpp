@@ -179,6 +179,7 @@ void Adafruit_KS0108_kbv::invertDisplay(bool i)
 void Adafruit_KS0108_kbv::backlight(bool i)
 {
     ks0108Led = i ? 0x01 : 0x00;
+    display();  //and show the result
 }
 
 void Adafruit_KS0108_kbv::display(void)

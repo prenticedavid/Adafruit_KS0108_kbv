@@ -34,6 +34,7 @@ class Adafruit_KS0108_kbv : public Adafruit_GFX {
         }
         void     display(void);
         void     backlight(bool on);
+        void     dim(bool off) { backlight(!off); } //like Adafruit_SSD1306
         
     protected:
         void     ks0108_command(uint8_t cmd);

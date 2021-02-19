@@ -117,8 +117,8 @@ void Adafruit_KS0108_kbv::fillRect(int16_t x0, int16_t y0, int16_t w, int16_t h,
     //update the physical buffer memory
     uint8_t lshift = y0 & 7;
     for (uint8_t y = y0 & ~7; y < 64 && h > 0; y += 8) {
-        uint8_t rshift = (h < 8) ? 8 - h : 0;
-        uint8_t mask = 0xFF >> rshift;
+        uint8_t mask = 0xFF;
+        if (h < 8) mask >>= 8 - h;
         uint8_t *p = getBuffer() + ((y / 8) * 128) + x0;
         if (lshift) {
             mask <<= lshift;

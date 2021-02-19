@@ -116,8 +116,7 @@ static void ks0108CmdPort(uint8_t cmd, uint8_t port)
 {
     port = (LCD_CMD_PORT & ~LCD_CMD_MASK) | (port & LCD_CMD_MASK);
     if (ks0108Led) port |= LCD_BLK;
-    else port &= ~LCD_BLK
-                     ;    //data and port can only change when E=0
+    else port &= ~LCD_BLK;    //data and port can only change when E=0
     if (LCD_DATA_OUT != cmd) i2cRegData(MCP23017, OLATB, cmd);
     i2cRegData2(MCP23017, OLATA, port | LCD_ENABLE, port); //tWH>450ns. tWH=2.25us @400kHz
     LCD_DATA_OUT = cmd;

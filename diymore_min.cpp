@@ -148,7 +148,7 @@ extern void ks0108BlitRect(const uint8_t *buf, uint8_t x, uint8_t y, uint8_t w, 
             if (controller > col) col = controller;
             if (endcol > controller + 64) endcol = controller + 64;
             if (endcol < controller) continue;
-            p = buf + pagwid * page + col;
+            p = (uint8_t*)buf + pagwid * page + col;
             ks0108CmdPort(LCD_SETPAGE | (page), LCD_CS1 | LCD_CS2);
             ks0108CmdPort(LCD_SETADSX | (col & 63), (col < 64) ? LCD_CS1 : LCD_CS2);
             while (col < endcol) {

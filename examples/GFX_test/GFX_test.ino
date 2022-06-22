@@ -15,39 +15,45 @@
 
 #define USE_LCD 0x0108
 
-#if 0
-#elif USE_LCD == 0x0108
+#if USE_LCD == 0x0108
 #include <Adafruit_KS0108_kbv.h>
 Adafruit_KS0108_kbv display;
 #define LCD_BEGIN()    display.begin()
-#define LCD_DISPLAY()  display.display()
 #elif USE_LCD == 0x1306
-#include <Adafruit_SSD1306.h> 
+#include <Adafruit_SSD1306.h>
 Adafruit_SSD1306 display(128, 64, &Wire);
 #define LCD_BEGIN()    display.begin(SSD1306_SWITCHCAPVCC, 0x3C)
-#define LCD_DISPLAY()  display.display()
+#define KS0108_WHITE   WHITE
+#define KS0108_BLACK   BLACK
+#define KS0108_INVERSE INVERSE
 #elif USE_LCD == 0x7565
-#include <Adafruit_ST7565_kbv.h> //global local
-Adafruit_ST7565_kbv display(10, 8, 9, 6);
+#include "Adafruit_ST7565_kbv.h" //local
+Adafruit_ST7565_kbv display(10);
 #define LCD_BEGIN()    display.begin()
-#define LCD_DISPLAY()  display.display()
+#define KS0108_WHITE   WHITE
+#define KS0108_BLACK   BLACK
+#define KS0108_INVERSE INVERSE
 #elif USE_LCD == 0x7567
 #include "Adafruit_ST7567_kbv.h" //local
 Adafruit_ST7567_kbv display(-1);
 #define LCD_BEGIN()    display.begin()
-#define LCD_DISPLAY()  display.display()
-#elif USE_LCD == 0x8544
-#include <Adafruit_PCD8544.h>
-Adafruit_PCD8544 display(9, 10, 8); //HW SPI
-//Adafruit_PCD8544 display(13, 11, 9, 10, 8); //SW SPI
-#define LCD_BEGIN()    display.begin(50, 4)
-#define LCD_DISPLAY()  display.display()
-#endif
-
-#if !defined(KS0108_WHITE)
 #define KS0108_WHITE   WHITE
 #define KS0108_BLACK   BLACK
 #define KS0108_INVERSE INVERSE
+#elif USE_LCD == 0x7920
+#include "Adafruit_ST7920_kbv.h" //local
+Adafruit_ST7920_kbv display(10);
+#define LCD_BEGIN()    display.begin()
+#define KS0108_WHITE   WHITE
+#define KS0108_BLACK   BLACK
+#define KS0108_INVERSE INVERSE
+#elif USE_LCD == 0xE7920
+#include <ST7920_GFX_Library.h>
+ST7920 display(10);
+#define LCD_BEGIN()    display.begin()
+#define KS0108_WHITE   WHITE
+#define KS0108_BLACK   BLACK
+#define KS0108_INVERSE 2
 #endif
 
 #define NUMFLAKES     10 // Number of snowflakes in the animation example
@@ -136,9 +142,15 @@ void runtests() {
     delay(1000);
 
     // Invert and restore display, pausing in-between
+#if USE_LCD == 0xE7920
+    display.invertDisplay(); //.kbv non-GFX method
+    delay(1000);
+    display.invertDisplay();
+#else
     display.invertDisplay(true);
     delay(1000);
     display.invertDisplay(false);
+#endif
     delay(1000);
 
     //testanimate(logo_bmp, LOGO_WIDTH, LOGO_HEIGHT); // Animate bitmaps

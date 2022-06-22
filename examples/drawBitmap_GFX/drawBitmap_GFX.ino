@@ -27,6 +27,16 @@ Adafruit_SSD1306 display(128, 64, &Wire);
 //Adafruit_SSD1306 display(OLED_DC, OLED_RESET, OLED_CS); // I use SPI
 //Adafruit_SSD1306 display(OLED_MOSI, OLED_CLK, OLED_DC, OLED_RESET, OLED_CS); // I use SPI
 #define LCD_BEGIN()  display.begin(SSD1306_SWITCHCAPVCC, 0x3C)
+#elif USE_LCD == 0x7565
+#include <Adafruit_ST7565_kbv.h> //global local
+Adafruit_ST7565_kbv display(10, 8, 9, 6);
+#define LCD_BEGIN()    display.begin()
+#define LCD_DISPLAY()  display.display()
+#elif USE_LCD == 0x7567
+#include "Adafruit_ST7567_kbv.h" //local
+Adafruit_ST7567_kbv display(-1);
+#define LCD_BEGIN()    display.begin()
+#define LCD_DISPLAY()  display.display()
 #endif 
 
 #include "bitmap_mono.h"

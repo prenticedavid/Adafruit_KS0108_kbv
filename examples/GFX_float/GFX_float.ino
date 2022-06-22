@@ -15,6 +15,16 @@ Adafruit_KS0108_kbv display;
 Adafruit_SSD1306 display(128, 64, &Wire);
 #define LCD_BEGIN()    display.begin(SSD1306_SWITCHCAPVCC, 0x3C)
 #define LCD_DISPLAY()  display.display()
+#elif USE_LCD == 0x7565
+#include <Adafruit_ST7565_kbv.h> //global local
+Adafruit_ST7565_kbv display(10, 8, 9, 6);
+#define LCD_BEGIN()    display.begin()
+#define LCD_DISPLAY()  display.display()
+#elif USE_LCD == 0x7567
+#include "Adafruit_ST7567_kbv.h" //local
+Adafruit_ST7567_kbv display(-1);
+#define LCD_BEGIN()    display.begin()
+#define LCD_DISPLAY()  display.display()
 #elif USE_LCD == 0x8544
 #include <Adafruit_PCD8544.h>
 Adafruit_PCD8544 display(9, 10, 8); //HW SPI

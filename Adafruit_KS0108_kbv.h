@@ -8,6 +8,7 @@
 #define BLACK                     KS0108_BLACK    ///< Draw 'off' pixels
 #define WHITE                     KS0108_WHITE    ///< Draw 'on' pixels
 #define INVERSE                   KS0108_INVERSE  ///< Invert pixels
+#define USE_PG         1
 
 class Adafruit_KS0108_kbv : public Adafruit_GFX {
 
@@ -25,7 +26,7 @@ class Adafruit_KS0108_kbv : public Adafruit_GFX {
         virtual void     fillScreen(uint16_t color)                                     {
             fillRect(0, 0, _width, _height, color);
         }
-        void clearDisplay(uint8_t color = KS0108_BLACK);
+        void clearDisplay(void);
         //virtual void     setRotation(uint8_t r);
         virtual void     invertDisplay(bool i);
         bool     getPixel(int16_t x, int16_t y);
@@ -38,8 +39,11 @@ class Adafruit_KS0108_kbv : public Adafruit_GFX {
         
     protected:
         void     ks0108_command(uint8_t cmd);
+#if USE_PG
+        uint8_t  pg_left[8], pg_rt[8];
+#else
         uint8_t _left, _rt, _top, _bot;
-
+#endif    
     private:
         uint8_t buffer[1024];
 };

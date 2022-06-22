@@ -20,8 +20,12 @@ void Adafruit_KS0108_kbv::begin(void)
     clearDisplay();
     backlight(true);
     setTextColor(WHITE); //because GFX defaults to 0xFFFF
+#if USE_PG
+    for (int i = 0; i < 8; i++) { pg_left[i] = 0; pg_rt[i] = 127; }
+#else
     _left = 0, _rt = 127; //ensure that whole buffer is displayed at start
     _top = 0, _bot = 63;
+#endif
 }
 
 #define USE_FILLRECT 1
@@ -57,10 +61,16 @@ void Adafruit_KS0108_kbv::drawPixel(int16_t x, int16_t y, uint16_t color)
         }
         if (d != old) { //is not too expensive
             *ads = d;
+#if USE_PG
+            uint8_t pg = y >> 3;
+            if (x < pg_left[pg]) pg_left[pg] = x;
+            if (x > pg_rt[pg]) pg_rt[pg] = x;
+#else
             if (x < _left) _left = x;
             if (x > _rt) _rt = x;
             if (y < _top) _top = y;
             if (y > _bot) _bot = y;
+#endif
         }
     }
 #endif
@@ -133,12 +143,16 @@ void Adafruit_KS0108_kbv::fillRect(int16_t x0, int16_t y0, int16_t w, int16_t h,
             if (color == KS0108_INVERSE) newb |= oldb ^ mask;
             if (newb != oldb) {
                 *p = newb;
-
+#if USE_PG
+                uint8_t pg = y >> 3;
+                if (x < pg_left[pg]) pg_left[pg] = x;
+                if (x > pg_rt[pg]) pg_rt[pg] = x;
+#else
                 if (x < _left) _left = x;
                 if (x > _rt) _rt = x;
                 if (y < _top) _top = y;
                 if (y > _bot) _bot = y;
-
+#endif
             }
         }
     }
@@ -151,28 +165,17 @@ void Adafruit_KS0108_kbv::fillRect(int16_t x0, int16_t y0, int16_t w, int16_t h,
 #endif
 }
 
-void Adafruit_KS0108_kbv::clearDisplay(uint8_t color)
+void Adafruit_KS0108_kbv::clearDisplay(void)
 {
-    uint8_t c = (color == KS0108_WHITE) ? 0xFF : 0x00;
-    for (uint8_t y = 0; y < 64; y += 8) {
-        uint8_t *p = getBuffer() + (y / 8) * 128;
-        for (uint8_t x = 0; x < 128; x++, p++) {
-            uint8_t oldb = *p;
-            if (color == KS0108_INVERSE) c = oldb ^ 0xFF;
-            if (oldb != c) {
-                *p = c;
-                if (x < _left) _left = x;
-                if (x > _rt) _rt = x;
-                if (y < _top) _top = y;
-                if (y > _bot) _bot = y;
-            }
-        }
-    }
+    fillRect(0, 0, width(), height(), KS0108_BLACK);
 }
 
 void Adafruit_KS0108_kbv::invertDisplay(bool i)
 {
     ks0108Xor = i ? 0xFF : 0x00;
+#if USE_PG
+    for (int i = 0; i < 8; i++) { pg_left[i] = 0; pg_rt[i] = 127; }
+#endif
     display();   //and show the result
 }
 
@@ -187,6 +190,15 @@ void Adafruit_KS0108_kbv::display(void)
     //ks0108Blit((const uint8_t*)buffer, 0);  //use SRAM
     //is not too expensive to minimise I2C traffic
     //extra housekeeping in ks0108BlitRect() is one off
+#if USE_PG
+    for (uint8_t pg = 0; pg < 8; pg++) {
+        if (pg_left[pg] <= pg_rt[pg]) {
+            ks0108BlitRect((const uint8_t*)buffer, pg_left[pg], pg << 3, pg_rt[pg] - pg_left[pg] + 1, 8, 0);  //use SRAM
+            pg_left[pg] = 127;
+            pg_rt[pg] = 0;
+        }
+    }
+#else
     if (_rt < _left) _left = 0, _rt = 127;
     if (_bot < _top) _top = 0, _bot = 63;
     ks0108BlitRect((const uint8_t*)buffer, _left, _top, _rt - _left + 1, _bot - _top + 1, 0);  //use SRAM
@@ -194,6 +206,7 @@ void Adafruit_KS0108_kbv::display(void)
     _rt = 0;
     _top = 63;
     _bot = 0;
+#endif
 }
 
 void Adafruit_KS0108_kbv::ks0108_command(uint8_t cmd)
